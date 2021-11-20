@@ -16,8 +16,13 @@ cfg.model.name = 'hyunwoongko/kobart'
 cfg.train = edict()
 cfg.train.max_epochs = 20
 cfg.train.batch_size = 8
+cfg.train.n_steps = 10000
 cfg.train.optimizer = 'torch.optim.AdamW'
 cfg.train.lr_schedule = 'torch.optim.lr_scheduler.CosineAnnealingLR'
+# ul_train
+cfg.ul_train = edict()
+cfg.ul_train.ngram_n = 3
+cfg.ul_train.p = 0.5
 # validation & inference
 cfg.val = edict()
 cfg.val.batch_size = 16
@@ -25,7 +30,10 @@ cfg.val.batch_size = 16
 cfg.gen = edict()
 cfg.gen.num_beams = 5
 cfg.gen.no_repeat_ngram_size = 3
+cfg.gen.input_length = 1024
 cfg.gen.max_length = 50
+cfg.gen.top_p = 0.7
+cfg.gen.top_k = 50
 # path
 cfg.path = edict()
 cfg.path.data = '../data'
@@ -38,3 +46,4 @@ cfg.path.val_news = 'news_val.json'
 cfg.path.test = 'test.jsonl'
 cfg.path.sub = 'submission.csv'
 cfg.path.output = '../output'
+cfg.path.submission = '../submission'

@@ -48,8 +48,10 @@ class GasDataLoader:
             self.testset = self.testset.remove_columns(self.cfg.dataset.test_useless_feats)
 
     def _get_train_loader(self, batch_size):
-        return DataLoader(self.trainset,
-                          batch_size = batch_size)
+        train_sampler = RandomSampler(self.trainset)
+        return DataLoader(self.trainset, 
+                        sampler = train_sampler,
+                        batch_size = batch_size)
     
     def _get_val_loader(self, batch_size):
         return DataLoader(self.valset,
@@ -68,14 +70,14 @@ def tokenize(batch, tokenizer, mode = 'train'):
                 'attention_mask':input_token['attention_mask'],
                 'decoder_input_ids':output_token['input_ids'],
                 'decoder_attention_mask':output_token['attention_mask'],
-                'label':output_token['input_ids']}
+                'labels':output_token['input_ids']}
     elif mode == 'val':
         texts, abstractives = batch['text'], batch['abstractive']
         input_token = tokenizer.batch_encode_plus(texts, max_length=1024, padding = 'max_length', return_tensors='pt')
         output_token = tokenizer.batch_encode_plus(abstractives,  max_length=512, padding = 'max_length', return_tensors='pt')
         return {'input_ids':input_token['input_ids'],
                 'attention_mask':input_token['attention_mask'],
-                'label':output_token['input_ids']}
+                'labels':output_token['input_ids']}
     else:
         texts = batch['text']
         input_token = tokenizer.batch_encode_plus(texts, max_length=1024, padding='max_length', return_tensors='pt')
