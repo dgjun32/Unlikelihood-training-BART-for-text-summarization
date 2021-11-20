@@ -121,42 +121,10 @@ parser.add_argument('--lm-coef', type=float, default=0.9)
 args = parser.parse_args()
 print(args)
 
-random.seed(args.seed)
-np.random.seed(args.seed)
-torch.manual_seed(args.seed)
-torch.cuda.manual_seed_all(args.seed)
-
-
-def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float('Inf')):
-    """ Filter a distribution of logits using top-k and/or nucleus (top-p) filtering
-        Args:
-            logits: logits distribution shape (vocabulary size)
-            top_k > 0: keep only top k tokens with highest probability (top-k filtering).
-            top_p > 0.0: keep the top tokens with cumulative probability >= top_p (nucleus filtering).
-                Nucleus filtering is described in Holtzman et al. (http://arxiv.org/abs/1904.09751)
-        From: https://gist.github.com/thomwolf/1a5a29f6962089e871b94cbd09daf317
-    """
-    assert logits.size(0) == 1  # batch size 1 for now - could be updated for more but the code would be less clear
-    logits = logits.squeeze(0)
-    top_k = min(top_k, logits.size(-1))  # Safety check
-    if top_k > 0:
-        # Remove all tokens with a probability less than the last token of the top-k
-        indices_to_remove = logits < torch.topk(logits, top_k)[0][..., -1, None]
-        logits[indices_to_remove] = filter_value
-
-    if top_p > 0.0:
-        sorted_logits, sorted_indices = torch.sort(logits, descending=True)
-        cumulative_probs = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
-
-        # Remove tokens with cumulative probability above the threshold
-        sorted_indices_to_remove = cumulative_probs > top_p
-        # Shift the indices to the right to keep also the first token above the threshold
-        sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
-        sorted_indices_to_remove[..., 0] = 0
-
-        indices_to_remove = sorted_indices[sorted_indices_to_remove]
-        logits[indices_to_remove] = filter_value
-    return logits
+random.seed(cfg.seed)
+np.random.seed(cfg.seed)
+torch.manual_seed(cfg.seed)
+torch.cuda.manual_seed_all(cfg.seed)
 
 # function for generating sequence given prefix(article) - used in ul_seq
 def sample_sequence(model,
@@ -166,10 +134,16 @@ def sample_sequence(model,
                     top_k=cfg.gen.top_k,
                     top_p=cfg.gen.top_p):
     '''
-    prefix_batch : dictionary containing keys ['input_ids','attention_mask']
+    Arguments
+        model : transformers.BartForConditionalGeneration.pretrained_from(cfg.model.name)
+        prefix_batch : Dict(torch.FloatTensor)
+    Returns:
+        pred_tok : torch.LongTensor
+        logits : torch.FloatTensor
     '''
+    
     assert prefix_batch['input_ids'].size(1) == prefix_length
-    # generate continuation
+    # generate continuation(if top_p = 1, top_k = 0 -> greedy algorithm)
     contiunation = model.generate(input_ids = prefix_batch['input_ids'],
                                   attention_mask = prefix_batch['attention_mask'],
                                   max_length = continuation_length,
@@ -177,10 +151,18 @@ def sample_sequence(model,
                                   top_p = top_p,
                                   output_scores = False,
                                   return_dict_in_generate = True)
-    return continuation['sequences'], continuation['hidden_states'] 
+    pred_tok, logits = continuation['sequences'], continuation['hidden_states'] 
+    return pred_tok, logits
 
 # function for computing token level MLE loss
 def mle_loss(model, batch):
+    '''
+    Arguments
+        model : transformers.BartForConditionalGeneration.pretrained_from(cfg.model.name)
+        batch : dict(torch.FloatTensor)
+    Returns:
+        loss : torch.FloatTensor shape of (1,)
+    '''
     model_output = model(input_ids=batch['input_ids'].cuda(),
                         attention_mask=batch['attention_mask'].cuda(),
                         decoder_attention_mask=batch['decoder_attention_mask'].cuda(),
@@ -191,8 +173,11 @@ def mle_loss(model, batch):
 
 def ul_seq(model, batch, cfg):
     '''
-    model : transformers.BartForConditionalGeneration
-    batch : Dict
+    Arguments
+        model : transformers.BartForConditionalGeneration.pretrained_from(cfg.model.name)
+        batch : dict(torch.FloatTensor)
+    Returns:
+        loss : torch.FloatTensor shape of (1,)
     '''
     pred_toks, continuation_logits = sample_sequence(model, batch,
                                                     cfg.gen.input_length,
@@ -310,37 +295,39 @@ if args.mode == 'eval-completion' or args.mode == 'eval-both':
                                     config=model.config.to_dict(),
                                     args=args)
 '''
-# model training
-if args.mode == 'train':
+# execute model training
+if __name__ == '__main__':
+    # creating checkpoint output directory 
     if not os.path.exists(os.path.join(cfg.path.output, 'best')):
         os.makedirs(os.path.join(cfg.path.output, 'best'))
 
     token_loss = mle_loss
+    
     # load dataset
     train_val_data = GasDataLoader(cfg, mode = 'train')
     train_loader = train_val_data._get_train_loader()
     val_loader = train_val_data._get_val_loader()
 
     # Setup optimizer
-    if args.max_steps > 0:
-        t_total = args.max_steps
-        args.num_train_epochs = args.max_steps // (len(train_seq_dataloader) // args.gradient_accumulation_steps) + 1
+    if cfg.train.max_steps > 0:
+        t_total = cfg.train.max_steps
+        cfg.train.max_epochs = cfg.train.max_steps//(len(train_loader) // cfg.train.gradient_accumulation_steps) + 1
     else:
-        t_total = len(train_seq_dataloader) // args.gradient_accumulation_steps * args.num_train_epochs
+        t_total = len(train_loader) // cfg.train.gradient_accumulation_steps * cfg.train.max_epochs
 
     param_optimizer = list(model.named_parameters())
     no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
     optimizer_grouped_parameters = [
-        {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], 'weight_decay': args.weight_decay},
+        {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], 'weight_decay': cfg.train.weight_decay},
         {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
         ]
-    optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
-    scheduler = WarmupLinearSchedule(optimizer, warmup_steps=args.warmup_steps, t_total=t_total)
+    optimizer = AdamW(optimizer_grouped_parameters, lr=cfg.train.learning_rate, eps=cfg.train.adam_eps)
+    scheduler = WarmupLinearSchedule(optimizer, warmup_steps=cfg.train.warmup_steps, t_total=t_total)
 
     # start training
     total_steps = 0
     best_ppl = 1e20
-    for _ in trange(args.num_train_epochs, desc="Epoch"):
+    for _ in trange(cfg.max_epochs, desc="Epoch"):
         logging_outputs = []
         epoch_loss = 0
         epoch_steps = 0
@@ -349,12 +336,12 @@ if args.mode == 'train':
             optimizer.zero_grad()
             batch = tokenize(batch, tokenizer, mode = 'train')
             # randomly apply seq level ul_loss or token level mle_loss
-            if torch.rand(1).item() < args.sequence_tune_rate:
-                loss, batch_metrics = ul_seq(model, batch, args)
+            if torch.rand(1).item() < cfg.ul_train.p:
+                loss, batch_metrics = ul_seq(model, batch, cfg)
 
             # Token loss
             else:
-                loss, batch_metrics = token_loss(model, batch, args)
+                loss, batch_metrics = token_loss(model, batch)
 
             loss.backward()
             optimizer.step()
@@ -366,7 +353,7 @@ if args.mode == 'train':
 
             logging_outputs.append(batch_metrics)
 
-            if epoch_steps % args.report_metrics_every == 0:
+            if epoch_steps % cfg.val.report_metrics_every == 0:
                 logging_average = CrossEntropyCriterionWCustomMetrics.aggregate_logging_outputs(logging_outputs)
                 temp = SequencePenaltyCriterion.aggregate_logging_outputs(logging_outputs)
                 for k, v in temp.items():
@@ -379,16 +366,16 @@ if args.mode == 'train':
                 break
 
             # save checkpoint
-            if epoch_steps % args.save_every == 0:
+            if epoch_steps % cfg.val.save_every == 0:
                 model_to_save = model.module if hasattr(model, 'module') else model
-                output_model_file = os.path.join(args.output_dir, WEIGHTS_NAME)
-                output_config_file = os.path.join(args.output_dir, CONFIG_NAME)
+                output_model_file = os.path.join(cfg.path.output_dir, WEIGHTS_NAME)
+                output_config_file = os.path.join(cfg.path.output_dir, CONFIG_NAME)
                 torch.save(model_to_save.state_dict(), output_model_file)
                 model_to_save.config.to_json_file(output_config_file)
-                tokenizer.save_vocabulary(args.output_dir)
+                tokenizer.save_vocabulary(cfg.path.output_dir)
 
             # validation
-            if total_steps % args.validate_every == 0:
+            if total_steps % cfg.val.validate_every == 0:
                 print("Validating...")
                 validation_outputs = eval_singletoken(model, args, dataset_paths, train_iter=total_steps)
                 if validation_outputs['ppl'] < best_ppl:
