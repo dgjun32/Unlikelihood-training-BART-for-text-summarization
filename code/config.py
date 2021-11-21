@@ -20,16 +20,17 @@ cfg.model.name = 'hyunwoongko/kobart'
 cfg.train = edict()
 cfg.train.max_steps = -1
 cfg.train.n_steps = 10000
-cfg.train.max_epochs = 20
-cfg.train.batch_size = 8
+cfg.train.max_epochs = 100
+cfg.train.batch_size = 4
 cfg.train.gradient_accumulation_steps = 1
 cfg.train.learning_rate = 6.25e-5
 cfg.train.weight_decay = 1e-2
 cfg.train.adam_eps = 1e-8
 cfg.train.lm_coef = 0.9
 cfg.train.optimizer = 'torch.optim.AdamW'
-cfg.train.lr_schedule = 'torch.optim.lr_scheduler.CosineAnnealingLR'
+cfg.train.lr_schedule = 'torch.optim.lr_scheduler.CosineAnnealingWarmRestarts'
 cfg.train.warmup_steps = 5
+cfg.train.T_mult = 1
 
 # ul_train
 cfg.ul_train = edict()
@@ -39,7 +40,6 @@ cfg.ul_train.p = 0.5
 # validation & inference
 cfg.val = edict()
 cfg.val.batch_size = 16
-cfg.val.save_every = 1000
 cfg.val.validate_every = 10000
 
 # generation

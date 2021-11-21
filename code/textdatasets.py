@@ -8,8 +8,9 @@ import os
 import gc
 
 from transformers import PreTrainedTokenizerFast
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader,RandomSampler
 from itertools import chain
+
 class GasDataLoader:
     def __init__(self, cfg, mode = 'test'):
         self.cfg = cfg
@@ -61,7 +62,16 @@ class GasDataLoader:
         return DataLoader(self.testset,
                           batch_size = batch_size)
 
+# batch tokenizing function
 def tokenize(batch, tokenizer, mode = 'train'):
+    """
+    Arguments :
+        batch : List(Str)
+        tokenizer : transformers.PreTrainedTokenizerFast.from_pretrained(cfg.model.name)
+        model : Str ('train' or 'val')
+    Returns :
+        Dict(torch.FloatTensor)
+    """
     if mode == 'train':
         texts, abstractives = batch['text'], batch['abstractive']
         input_token = tokenizer.batch_encode_plus(texts, max_length=1024, padding = 'max_length', return_tensors='pt')

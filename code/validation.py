@@ -6,35 +6,7 @@ import time
 
 from textdatasets import tokenize
 
-def train(cfg, model, train_loader, optimizer, tokenizer):
-    total_steps = len(train_loader)
-    for step, batch in enumerate(train_loader):
-        # time
-        start_time = time.time()
-        # tensor size for reshape
-        batch = tokenize(batch, tokenizer, mode = 'train')
-        # forward prop
-        loss = model(input_ids = batch['input_ids'].cuda(), 
-                    attention_mask = batch['attention_mask'].cuda(),
-                    decoder_input_ids = batch['decoder_input_ids'].cuda(),
-                    decoder_attention_mask = batch['decoder_attention_mask'].cuda(),
-                    labels = batch['label'].cuda())
-        # optimizer step
-        loss.backward()
-        optimizer.step()
-        optimizer.zero_grad()
-        elapsed = time.time() - start_time
-        expected = elapsed * (total_steps-step-1)
-        h = int(expected//3600)
-        m = int((expected%3600) // 60)
-        # verbose
-        if (step % 300 == 0) or (step == total_steps-1):
-            print('[{} / {}] steps | loss : {} | until last step : {}h {}m'.format(step,
-                                                                        total_steps,
-                                                                        loss.item(),
-                                                                        h, m))
-
-def validation(cfg, model, val_dataloader, tokenizer, generation_param, metric):
+def validate(cfg, model, val_dataloader, tokenizer, generation_param, metric):
     '''
     model : pytorch nn.Module
     val_dataloader : nn.DataLoader
