@@ -46,10 +46,10 @@ cfg.val.validate_every = 10000
 cfg.gen = edict()
 cfg.gen.num_beams = 5
 cfg.gen.no_repeat_ngram_size = 3
-cfg.gen.input_length = 1024
+cfg.gen.input_length = 512
 cfg.gen.max_length = 50
-cfg.gen.top_p = 0.7
-cfg.gen.top_k = 50
+cfg.gen.top_p = 0
+cfg.gen.top_k = 1
 
 # path
 cfg.path = edict()

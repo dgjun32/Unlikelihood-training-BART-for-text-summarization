@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 import datasets
 import transformers
+from transformers import LogitsProcessorList, MinLengthLogitsProcessor
 from torch.utils.data import TensorDataset, SequentialSampler, DataLoader, RandomSampler
 import torch.nn.functional as F
 
@@ -28,6 +29,9 @@ import os
 import re
 import random
 
+
+os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
+
 print('Succesfully installed libraries')
 
 # function for generating sequence given prefix(article) - used in ul_seq
@@ -41,13 +45,15 @@ def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float('Inf')
         From: https://gist.github.com/thomwolf/1a5a29f6962089e871b94cbd09daf317
     """
     assert logits.size(0) == cfg.train.batch_size  # batch size 1 for now - could be updated for more but the code would be less clear
-    logits = logits.squeeze(0)
     top_k = min(top_k, logits.size(-1))  # Safety check
     if top_k > 0:
         # Remove all tokens with a probability less than the last token of the top-k
         indices_to_remove = logits < torch.topk(logits, top_k)[0][..., -1, None]
-        logits[indices_to_remove] = filter_value
-
+        for i in range(logits.shape[0]):
+            for j in range(logits.shape[1]):
+                if indices_to_remove[i,j]==True:
+                    logits[i,j]=filter_value
+                    
     if top_p > 0.0:
         sorted_logits, sorted_indices = torch.sort(logits, descending=True)
         cumulative_probs = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
@@ -63,6 +69,29 @@ def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float('Inf')
     return logits
 
 
+def sample_sequence_1(model, prefix_batch, prefix_length=cfg.gen.input_length,
+                    continuation_length=cfg.gen.max_length):
+    context = prefix_batch
+    assert context['input_ids'].size(1) == prefix_length
+    with torch.enable_grad():
+        encoder_outputs = model(context['input_ids'], context['attention_mask'], output_hidden_states=True, output_attentions=True)
+        enc_outputs =  (encoder_outputs['encoder_last_hidden_state'],
+                        encoder_outputs['encoder_hidden_states'],
+                        encoder_outputs['encoder_attentions'])
+        out = model.greedy_search(input_ids = context['input_ids'],
+                                attention_mask = context['attention_mask'],
+                                pad_token_id = tokenizer.pad_token_id,
+                                eos_token_id = tokenizer.eos_token_id,
+                                bos_token_id = tokenizer.bos_token_id,
+                                max_length = 50,
+                                num_return_sequences = 1,
+                                output_scores = True,
+                                return_dict_in_generate = True,
+                                encoder_outputs = enc_outputs)
+        continuation_scores, output = torch.stack(out['scores'], dim=1), out['sequences']
+
+    return output, continuation_scores
+
 def sample_sequence(model, prefix_batch, prefix_length=cfg.gen.input_length,
                     continuation_length=cfg.gen.max_length,
                     top_k=cfg.gen.top_k,
@@ -70,11 +99,11 @@ def sample_sequence(model, prefix_batch, prefix_length=cfg.gen.input_length,
     context = prefix_batch
     assert context['input_ids'].size(1) == prefix_length
     prev = context['input_ids']
+    past = None
     continuation_logits = []
     output = []
-    past = None
     for i in range(continuation_length):
-        out = model(prev.cuda(), past_key_values=past)
+        out = model(input_ids = prev, past_key_values=past, use_cache=True)
         logits, past = out['logits'], out['past_key_values']
         logits = logits[:, -1, :]
 
@@ -84,15 +113,14 @@ def sample_sequence(model, prefix_batch, prefix_length=cfg.gen.input_length,
         else:
             # random sampling
             filtered_logits = top_k_top_p_filtering(logits, top_k=top_k, top_p=top_p)
-            prev = F.softmax(filtered_logits, dim=-1).multinomial(num_samples=1)
-
+            prev = F.softmax(filtered_logits, dim=1).multinomial(num_samples=1)
+        
         continuation_logits.append(logits)
-        output = output.append(prev)
+        output.append(prev)
 
-    continuation_logits = torch.stack(continuation_logits, 1)
-    output = torch.stack(output, 1)
-
-    return output, continuation_logits
+    continuation_scores = F.softmax(torch.stack(continuation_logits, 1), dim = 2)
+    output = torch.stack(output, 1).squeeze(2)
+    return output, continuation_scores
 
 # function for computing token level MLE loss
 def mle_loss(model, batch):
@@ -103,10 +131,10 @@ def mle_loss(model, batch):
     Returns:
         loss : torch.FloatTensor shape of (1,)
     '''
-    model_output = model(input_ids=batch['input_ids'].cuda(),
-                        attention_mask=batch['attention_mask'].cuda(),
-                        decoder_attention_mask=batch['decoder_attention_mask'].cuda(),
-                        labels=batch['decoder_input_ids'].cuda())
+    model_output = model(input_ids=batch['input_ids'],
+                        attention_mask=batch['attention_mask'],
+                        decoder_attention_mask=batch['decoder_attention_mask'],
+                        labels=batch['decoder_input_ids'])
     mleloss = model_output['loss']
     return mleloss
 
@@ -121,13 +149,11 @@ def ul_seq(model, batch, cfg):
     '''
     pred_toks, continuation_scores = sample_sequence(model, batch,
                                                     cfg.gen.input_length,
-                                                    cfg.gen.max_length,
-                                                    cfg.gen.top_k,
-                                                    cfg.gen.top_p)
+                                                    cfg.gen.max_length)
     mask = ngram_repeat_mask(pred_toks, cfg.ul_train.ngram_n).type_as(continuation_scores)
     pred_lprobs = continuation_scores.reshape(-1, continuation_scores.size(2)).gather(1, pred_toks.reshape(-1, 1))
-    one_minus_probs = torch.clamp((1.0 - pred_lprobs.exp()), min=1e-20).reshape(pred_toks.size(0), pred_toks.size(1))
-    loss = -torch.log(one_minus_probs) * mask.cuda()
+    one_minus_probs = torch.clamp((1.0 - pred_lprobs), min=1e-20).reshape(pred_toks.size(0), pred_toks.size(1))
+    loss = -torch.log(one_minus_probs) * mask
     loss = loss.sum()
     ntokens = pred_toks.numel()  # number of output tokens (tokens in continuation)
     loss = loss / ntokens
@@ -159,7 +185,8 @@ if __name__ == '__main__':
     print('Set Random Seed')
     
     # set device
-    torch.cuda.set_device(1)
+    device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+    torch.cuda.set_device(device)
     print('GPU device successfully allocated')
 
     # set output dir
@@ -172,7 +199,6 @@ if __name__ == '__main__':
 
     # load pretrained model
     model = transformers.BartForConditionalGeneration.from_pretrained(cfg.model.name)
-    model.cuda()
     print('Loaded pretrained model and tokenizer')
 
     token_loss = mle_loss
