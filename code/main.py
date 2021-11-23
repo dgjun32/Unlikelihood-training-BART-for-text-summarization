@@ -103,7 +103,7 @@ def sample_sequence(model, prefix_batch, prefix_length=cfg.gen.input_length,
     continuation_logits = []
     output = []
     for i in range(continuation_length):
-        out = model(input_ids = prev, past_key_values=past, use_cache=True)
+        out = model(input_ids = prev.cuda(), past_key_values=past, use_cache=True)
         logits, past = out['logits'], out['past_key_values']
         logits = logits[:, -1, :]
 
@@ -131,10 +131,10 @@ def mle_loss(model, batch):
     Returns:
         loss : torch.FloatTensor shape of (1,)
     '''
-    model_output = model(input_ids=batch['input_ids'],
-                        attention_mask=batch['attention_mask'],
-                        decoder_attention_mask=batch['decoder_attention_mask'],
-                        labels=batch['decoder_input_ids'])
+    model_output = model(input_ids=batch['input_ids'].cuda(),
+                        attention_mask=batch['attention_mask'].cuda(),
+                        decoder_attention_mask=batch['decoder_attention_mask'].cuda(),
+                        labels=batch['decoder_input_ids'].cuda())
     mleloss = model_output['loss']
     return mleloss
 
@@ -199,6 +199,7 @@ if __name__ == '__main__':
 
     # load pretrained model
     model = transformers.BartForConditionalGeneration.from_pretrained(cfg.model.name)
+    model.cuda()
     print('Loaded pretrained model and tokenizer')
 
     token_loss = mle_loss
