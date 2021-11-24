@@ -19,7 +19,7 @@ def validate(cfg, model, val_dataloader, tokenizer, generation_param, metric):
     model.cuda()
     metric = datasets.load_metric('rouge')
     for i, batch in enumerate(val_dataloader):
-        batch = tokenize(batch, tokenizer, mode = 'val')
+        batch = tokenize(batch, tokenizer, cfg, mode = 'val')
         token_pred = model.generate(
             **generation_param,
             input_ids = batch['input_ids'],
