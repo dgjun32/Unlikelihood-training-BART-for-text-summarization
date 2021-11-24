@@ -28,7 +28,7 @@ def validate(cfg, model, val_dataloader, tokenizer, generation_param, metric):
             eos_token_id = tokenizer.eos_token_id,
             bos_token_id = tokenizer.bos_token_id,
             num_return_sequences = 1,
-            early_stopping = True,
+            early_stopping = True
             )
         text_pred = tokenizer.batch_decode(
             token_pred,

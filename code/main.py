@@ -69,33 +69,12 @@ def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float('Inf')
     return logits
 
 
-def sample_sequence_1(model, prefix_batch, prefix_length=cfg.gen.input_length,
-                    continuation_length=cfg.gen.max_length):
-    context = prefix_batch
-    assert context['input_ids'].size(1) == prefix_length
-    with torch.enable_grad():
-        encoder_outputs = model(context['input_ids'], context['attention_mask'], output_hidden_states=True, output_attentions=True)
-        enc_outputs =  (encoder_outputs['encoder_last_hidden_state'],
-                        encoder_outputs['encoder_hidden_states'],
-                        encoder_outputs['encoder_attentions'])
-        out = model.greedy_search(input_ids = context['input_ids'],
-                                attention_mask = context['attention_mask'],
-                                pad_token_id = tokenizer.pad_token_id,
-                                eos_token_id = tokenizer.eos_token_id,
-                                bos_token_id = tokenizer.bos_token_id,
-                                max_length = 50,
-                                num_return_sequences = 1,
-                                output_scores = True,
-                                return_dict_in_generate = True,
-                                encoder_outputs = enc_outputs)
-        continuation_scores, output = torch.stack(out['scores'], dim=1), out['sequences']
 
-    return output, continuation_scores
 
-def sample_sequence(model, prefix_batch, prefix_length=cfg.gen.input_length,
-                    continuation_length=cfg.gen.max_length,
-                    top_k=cfg.gen.top_k,
-                    top_p=cfg.gen.top_p):
+def sample_sequence(model, prefix_batch, prefix_length=cfg.train.input_length,
+                    continuation_length=cfg.train.output_length,
+                    top_k=cfg.train.top_k,
+                    top_p=cfg.train.top_p):
     context = prefix_batch
     assert context['input_ids'].size(1) == prefix_length
     prev = context['input_ids']
@@ -148,8 +127,8 @@ def ul_seq(model, batch, cfg):
         loss : torch.FloatTensor shape of (1,)
     '''
     pred_toks, continuation_scores = sample_sequence(model, batch,
-                                                    cfg.gen.input_length,
-                                                    cfg.gen.max_length)
+                                                    cfg.train.input_length,
+                                                    cfg.train.output_length)
     mask = ngram_repeat_mask(pred_toks, cfg.ul_train.ngram_n).type_as(continuation_scores)
     pred_lprobs = continuation_scores.reshape(-1, continuation_scores.size(2)).gather(1, pred_toks.reshape(-1, 1))
     one_minus_probs = torch.clamp((1.0 - pred_lprobs), min=1e-20).reshape(pred_toks.size(0), pred_toks.size(1))
@@ -240,7 +219,7 @@ if __name__ == '__main__':
         tqdm_bar = tqdm(train_loader, desc="Training", total=cfg.train.n_steps)
         for step, batch in enumerate(tqdm_bar):
             optimizer.zero_grad()
-            batch = tokenize(batch, tokenizer, mode = 'train')
+            batch = tokenize(batch, tokenizer, cfg, mode = 'train')
             # randomly apply seq level ul_loss or token level mle_loss
             if torch.rand(1).item() < cfg.ul_train.p:
                 loss = ul_seq(model, batch, cfg)
@@ -275,7 +254,19 @@ if __name__ == '__main__':
                 # model validation (compute Rouge1, Rouge2, RougeL score)
                 print("Validating...")
                 with torch.no_grad():
-                    r1, r2, rL = validate(model, val_loader, tokenizer, cfg.gen, metric)
+                    r1, r2, rL = validate(cfg, model, val_loader, tokenizer, cfg.gen, metric)
+                    # example abstraction
+                    ex_tokens = tokenizer([cfg.val.example_article], max_length=cfg.train.input_length, padding = 'max_length', return_tensors='pt', truncation=True)
+                    ex_seq = model.generate(input_ids=ex_tokens['input_ids'],
+                                 attention_mask=ex_tokens['attention_mask'],
+                                **cfg.gen,
+                                pad_token_id = tokenizer.pad_token_id,
+                                eos_token_id = tokenizer.eos_token_id,
+                                bos_token_id = tokenizer.bos_token_id,
+                                num_return_sequences = 1,
+                                early_stopping = True)
+                    text_pred = tokenizer.batch_decode(ex_seq, skip_special_tokens=True)
+                    print(text_pred)
                 print('| val_rouge_1 : {} | val_rouge_2 : {} | val_rouge_L : {} |'.format(r1, r2, rL))
                 print('='*50)
                 # save checkpoint

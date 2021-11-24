@@ -1,0 +1,168 @@
+Succesfully installed libraries
+Traceback (most recent call last):
+  File "/home/coder/dongjun/koBARTtuning/code/main.py", line 72, in <module>
+    def sample_sequence_1(model, prefix_batch, prefix_length=cfg.gen.input_length,
+AttributeError: 'EasyDict' object has no attribute 'input_length'
+Succesfully installed libraries
+Traceback (most recent call last):
+  File "/home/coder/dongjun/koBARTtuning/code/main.py", line 72, in <module>
+    def sample_sequence_1(model, prefix_batch, prefix_length=cfg.gen.input_length,
+AttributeError: 'EasyDict' object has no attribute 'input_length'
+Succesfully installed libraries
+Set Random Seed
+GPU device successfully allocated
+The tokenizer class you load from this checkpoint is not the same type as the class this function is called from. It may result in unexpected tokenization. 
+The tokenizer class you load from this checkpoint is 'BartTokenizer'. 
+The class this function is called from is 'PreTrainedTokenizerFast'.
+Loaded pretrained model and tokenizer
+Using custom data configuration default-88abad614cf73836
+Reusing dataset json (/home/coder/.cache/huggingface/datasets/json/default-88abad614cf73836/0.0.0)
+Using custom data configuration default-2f70fc4f1434c30c
+Reusing dataset json (/home/coder/.cache/huggingface/datasets/json/default-2f70fc4f1434c30c/0.0.0)
+Using custom data configuration default-8a2882af15d7ff44
+Reusing dataset json (/home/coder/.cache/huggingface/datasets/json/default-8a2882af15d7ff44/0.0.0)
+Loading cached split indices for dataset at /home/coder/.cache/huggingface/datasets/json/default-88abad614cf73836/0.0.0/cache-fd702bc77a548f83.arrow and /home/coder/.cache/huggingface/datasets/json/default-88abad614cf73836/0.0.0/cache-546db95a8f67b5eb.arrow
+Loading cached processed dataset at /home/coder/.cache/huggingface/datasets/json/default-88abad614cf73836/0.0.0/cache-0a80bad94cf5cbb4.arrow
+Loading cached processed dataset at /home/coder/.cache/huggingface/datasets/json/default-88abad614cf73836/0.0.0/cache-d598853bf9f601f7.arrow
+Loaded dataset and loader
+Training......
+Epoch:   0%|          | 0/100 [00:00<?, ?it/s]
+Training:   0%|          | 0/10000 [00:00<?, ?it/s][ATraining:   0%|          | 0/10000 [00:00<?, ?it/s]
+Epoch:   0%|          | 0/100 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/coder/dongjun/koBARTtuning/code/main.py", line 222, in <module>
+    batch = tokenize(batch, tokenizer, mode = 'train')
+TypeError: tokenize() missing 1 required positional argument: 'cfg'
+Succesfully installed libraries
+Set Random Seed
+GPU device successfully allocated
+The tokenizer class you load from this checkpoint is not the same type as the class this function is called from. It may result in unexpected tokenization. 
+The tokenizer class you load from this checkpoint is 'BartTokenizer'. 
+The class this function is called from is 'PreTrainedTokenizerFast'.
+Loaded pretrained model and tokenizer
+Using custom data configuration default-88abad614cf73836
+Reusing dataset json (/home/coder/.cache/huggingface/datasets/json/default-88abad614cf73836/0.0.0)
+Using custom data configuration default-2f70fc4f1434c30c
+Reusing dataset json (/home/coder/.cache/huggingface/datasets/json/default-2f70fc4f1434c30c/0.0.0)
+Using custom data configuration default-8a2882af15d7ff44
+Reusing dataset json (/home/coder/.cache/huggingface/datasets/json/default-8a2882af15d7ff44/0.0.0)
+Loading cached split indices for dataset at /home/coder/.cache/huggingface/datasets/json/default-88abad614cf73836/0.0.0/cache-fd702bc77a548f83.arrow and /home/coder/.cache/huggingface/datasets/json/default-88abad614cf73836/0.0.0/cache-546db95a8f67b5eb.arrow
+Loading cached processed dataset at /home/coder/.cache/huggingface/datasets/json/default-88abad614cf73836/0.0.0/cache-0a80bad94cf5cbb4.arrow
+Loading cached processed dataset at /home/coder/.cache/huggingface/datasets/json/default-88abad614cf73836/0.0.0/cache-d598853bf9f601f7.arrow
+Loaded dataset and loader
+Training......
+Epoch:   0%|          | 0/100 [00:00<?, ?it/s]
+Training:   0%|          | 0/10000 [00:00<?, ?it/s][ATraining:   0%|          | 0/10000 [00:02<?, ?it/s]
+Epoch:   0%|          | 0/100 [00:02<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/coder/dongjun/koBARTtuning/code/main.py", line 225, in <module>
+    loss = ul_seq(model, batch, cfg)
+  File "/home/coder/dongjun/koBARTtuning/code/main.py", line 129, in ul_seq
+    pred_toks, continuation_scores = sample_sequence(model, batch,
+  File "/home/coder/dongjun/koBARTtuning/code/main.py", line 85, in sample_sequence
+    out = model(input_ids = prev.cuda(), past_key_values=past, use_cache=True)
+  File "/home/ubuntu/anaconda3/envs/dongjun/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1051, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/ubuntu/anaconda3/envs/dongjun/lib/python3.9/site-packages/transformers/models/bart/modeling_bart.py", line 1299, in forward
+    outputs = self.model(
+  File "/home/ubuntu/anaconda3/envs/dongjun/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1051, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/ubuntu/anaconda3/envs/dongjun/lib/python3.9/site-packages/transformers/models/bart/modeling_bart.py", line 1190, in forward
+    decoder_outputs = self.decoder(
+  File "/home/ubuntu/anaconda3/envs/dongjun/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1051, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/ubuntu/anaconda3/envs/dongjun/lib/python3.9/site-packages/transformers/models/bart/modeling_bart.py", line 1057, in forward
+    layer_outputs = decoder_layer(
+  File "/home/ubuntu/anaconda3/envs/dongjun/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1051, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/ubuntu/anaconda3/envs/dongjun/lib/python3.9/site-packages/transformers/models/bart/modeling_bart.py", line 393, in forward
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+  File "/home/ubuntu/anaconda3/envs/dongjun/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1051, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/ubuntu/anaconda3/envs/dongjun/lib/python3.9/site-packages/transformers/models/bart/modeling_bart.py", line 187, in forward
+    key_states = torch.cat([past_key_value[0], key_states], dim=2)
+RuntimeError: CUDA out of memory. Tried to allocate 14.00 MiB (GPU 1; 22.17 GiB total capacity; 20.25 GiB already allocated; 14.81 MiB free; 20.97 GiB reserved in total by PyTorch)
+Succesfully installed libraries
+Set Random Seed
+GPU device successfully allocated
+The tokenizer class you load from this checkpoint is not the same type as the class this function is called from. It may result in unexpected tokenization. 
+The tokenizer class you load from this checkpoint is 'BartTokenizer'. 
+The class this function is called from is 'PreTrainedTokenizerFast'.
+Loaded pretrained model and tokenizer
+Using custom data configuration default-88abad614cf73836
+Reusing dataset json (/home/coder/.cache/huggingface/datasets/json/default-88abad614cf73836/0.0.0)
+Using custom data configuration default-2f70fc4f1434c30c
+Reusing dataset json (/home/coder/.cache/huggingface/datasets/json/default-2f70fc4f1434c30c/0.0.0)
+Using custom data configuration default-8a2882af15d7ff44
+Reusing dataset json (/home/coder/.cache/huggingface/datasets/json/default-8a2882af15d7ff44/0.0.0)
+Loading cached split indices for dataset at /home/coder/.cache/huggingface/datasets/json/default-88abad614cf73836/0.0.0/cache-fd702bc77a548f83.arrow and /home/coder/.cache/huggingface/datasets/json/default-88abad614cf73836/0.0.0/cache-546db95a8f67b5eb.arrow
+Loading cached processed dataset at /home/coder/.cache/huggingface/datasets/json/default-88abad614cf73836/0.0.0/cache-0a80bad94cf5cbb4.arrow
+Loading cached processed dataset at /home/coder/.cache/huggingface/datasets/json/default-88abad614cf73836/0.0.0/cache-d598853bf9f601f7.arrow
+Loaded dataset and loader
+Training......
+Epoch:   0%|          | 0/100 [00:00<?, ?it/s]
+Training:   0%|          | 0/10000 [00:00<?, ?it/s][A/home/ubuntu/anaconda3/envs/dongjun/lib/python3.9/site-packages/torch/optim/lr_scheduler.py:971: UserWarning: To get the last learning rate computed by the scheduler, please use `get_last_lr()`.
+  warnings.warn("To get the last learning rate computed by the scheduler, "
+
+Training loss: 2.28e-01 lr: 5.65e-05:   0%|          | 1/10000 [00:06<18:28:49,  6.65s/it][A
+Training loss: 3.05e-01 lr: 4.09e-05:   0%|          | 2/10000 [00:12<17:38:54,  6.35s/it][A
+Training loss: 3.11e-01 lr: 2.16e-05:   0%|          | 3/10000 [00:17<17:05:19,  6.15s/it][A
+Training loss: 4.01e+00 lr: 5.98e-06:   0%|          | 4/10000 [00:18<12:11:57,  4.39s/it][A
+Training loss: 5.51e+00 lr: 6.25e-05:   0%|          | 5/10000 [00:18<8:43:43,  3.14s/it] [A
+Training loss: 6.46e+00 lr: 5.65e-05:   0%|          | 6/10000 [00:18<6:17:48,  2.27s/it][A
+Training loss: 6.85e+00 lr: 4.09e-05:   0%|          | 7/10000 [00:18<4:35:40,  1.66s/it][A
+Training loss: 6.87e+00 lr: 2.16e-05:   0%|          | 8/10000 [00:19<3:24:05,  1.23s/it][A
+Training loss: 6.93e+00 lr: 5.98e-06:   0%|          | 9/10000 [00:19<2:33:59,  1.08it/s][A
+Training loss: 6.91e+00 lr: 6.25e-05:   0%|          | 10/10000 [00:19<1:58:57,  1.40it/s][A
+Training loss: 6.86e+00 lr: 5.65e-05:   0%|          | 11/10000 [00:19<1:34:23,  1.76it/s][A
+Training loss: 6.29e+00 lr: 4.09e-05:   0%|          | 12/10000 [00:25<5:42:20,  2.06s/it][A
+Training loss: 5.81e+00 lr: 2.16e-05:   0%|          | 13/10000 [00:31<8:42:02,  3.14s/it][A
+Training loss: 5.72e+00 lr: 5.98e-06:   0%|          | 14/10000 [00:31<6:19:06,  2.28s/it][A
+Training loss: 5.34e+00 lr: 6.25e-05:   0%|          | 15/10000 [00:36<9:01:32,  3.25s/it][A
+Training loss: 5.33e+00 lr: 5.65e-05:   0%|          | 16/10000 [00:37<6:32:14,  2.36s/it][A
+Training loss: 5.02e+00 lr: 4.09e-05:   0%|          | 17/10000 [00:42<9:10:46,  3.31s/it][A
+Training loss: 4.99e+00 lr: 2.16e-05:   0%|          | 18/10000 [00:42<6:38:51,  2.40s/it][A
+Training loss: 4.93e+00 lr: 5.98e-06:   0%|          | 19/10000 [00:43<4:50:31,  1.75s/it][A
+Training loss: 4.87e+00 lr: 6.25e-05:   0%|          | 20/10000 [00:43<3:34:34,  1.29s/it][A
+Training loss: 4.84e+00 lr: 5.65e-05:   0%|          | 21/10000 [00:43<2:41:22,  1.03it/s][A
+Training loss: 4.79e+00 lr: 4.09e-05:   0%|          | 22/10000 [00:43<2:04:06,  1.34it/s][A
+Training loss: 4.74e+00 lr: 2.16e-05:   0%|          | 23/10000 [00:44<1:37:59,  1.70it/s][A
+Training loss: 4.69e+00 lr: 5.98e-06:   0%|          | 24/10000 [00:44<1:19:44,  2.09it/s][A
+Training loss: 4.65e+00 lr: 6.25e-05:   0%|          | 25/10000 [00:44<1:06:53,  2.49it/s][A
+Training loss: 4.61e+00 lr: 5.65e-05:   0%|          | 26/10000 [00:44<57:54,  2.87it/s]  [A
+Training loss: 4.56e+00 lr: 4.09e-05:   0%|          | 27/10000 [00:44<51:37,  3.22it/s][A
+Training loss: 4.40e+00 lr: 2.16e-05:   0%|          | 28/10000 [00:50<5:11:58,  1.88s/it][A
+Training loss: 4.25e+00 lr: 5.98e-06:   0%|          | 29/10000 [00:56<8:20:10,  3.01s/it][A
+Training loss: 4.18e+00 lr: 6.25e-05:   0%|          | 30/10000 [00:56<6:03:59,  2.19s/it][A
+Training loss: 4.15e+00 lr: 5.65e-05:   0%|          | 31/10000 [00:56<4:26:08,  1.60s/it][A
+Training loss: 4.12e+00 lr: 4.09e-05:   0%|          | 32/10000 [00:56<3:17:31,  1.19s/it][A
+Training loss: 4.07e+00 lr: 2.16e-05:   0%|          | 33/10000 [00:57<2:29:24,  1.11it/s][A
+Training loss: 3.95e+00 lr: 5.98e-06:   0%|          | 34/10000 [01:02<6:20:02,  2.29s/it][A
+Training loss: 3.92e+00 lr: 6.25e-05:   0%|          | 35/10000 [01:02<4:39:25,  1.68s/it][A
+Training loss: 3.81e+00 lr: 5.65e-05:   0%|          | 36/10000 [01:08<8:15:44,  2.99s/it][A
+Training loss: 3.71e+00 lr: 4.09e-05:   0%|          | 37/10000 [01:15<10:53:15,  3.93s/it][A
+Training loss: 3.68e+00 lr: 2.16e-05:   0%|          | 38/10000 [01:15<7:51:22,  2.84s/it] [A
+Training loss: 3.59e+00 lr: 5.98e-06:   0%|          | 39/10000 [01:21<10:30:06,  3.80s/it][A
+Training loss: 3.50e+00 lr: 6.25e-05:   0%|          | 40/10000 [01:27<12:26:13,  4.50s/it][A
+Training loss: 3.47e+00 lr: 5.65e-05:   0%|          | 41/10000 [01:27<8:56:21,  3.23s/it] [A
+Training loss: 3.45e+00 lr: 4.09e-05:   0%|          | 42/10000 [01:28<6:27:21,  2.33s/it][A
+Training loss: 3.42e+00 lr: 2.16e-05:   0%|          | 43/10000 [01:28<4:42:52,  1.70s/it][A
+Training loss: 3.34e+00 lr: 5.98e-06:   0%|          | 44/10000 [01:34<8:17:48,  3.00s/it][A
+Training loss: 3.32e+00 lr: 6.25e-05:   0%|          | 45/10000 [01:34<6:01:55,  2.18s/it][A
+Training loss: 3.30e+00 lr: 5.65e-05:   0%|          | 46/10000 [01:34<4:25:02,  1.60s/it][A
+Training loss: 3.23e+00 lr: 4.09e-05:   0%|          | 47/10000 [01:40<8:05:25,  2.93s/it][A
+Training loss: 3.16e+00 lr: 2.16e-05:   0%|          | 48/10000 [01:46<10:45:31,  3.89s/it][A
+Training loss: 3.10e+00 lr: 5.98e-06:   0%|          | 49/10000 [01:53<12:39:27,  4.58s/it][A
+Training loss: 3.04e+00 lr: 6.25e-05:   0%|          | 50/10000 [01:59<14:02:37,  5.08s/it][A
+Training loss: 3.01e+00 lr: 5.65e-05:   1%|          | 51/10000 [01:59<10:04:45,  3.65s/it][A
+Training loss: 2.96e+00 lr: 4.09e-05:   1%|          | 52/10000 [02:05<12:03:29,  4.36s/it][A
+Training loss: 2.94e+00 lr: 2.16e-05:   1%|          | 53/10000 [02:05<8:40:10,  3.14s/it] [A
+Training loss: 2.93e+00 lr: 5.98e-06:   1%|          | 54/10000 [02:06<6:15:51,  2.27s/it][A
+Training loss: 2.87e+00 lr: 6.25e-05:   1%|          | 55/10000 [02:12<9:23:02,  3.40s/it][A
+Training loss: 2.86e+00 lr: 5.65e-05:   1%|          | 56/10000 [02:12<6:47:37,  2.46s/it][A
+Training loss: 2.84e+00 lr: 4.09e-05:   1%|          | 57/10000 [02:12<4:56:56,  1.79s/it][A
+Training loss: 2.82e+00 lr: 2.16e-05:   1%|          | 58/10000 [02:12<3:39:10,  1.32s/it][A
+Training loss: 2.77e+00 lr: 5.98e-06:   1%|          | 59/10000 [02:18<7:08:34,  2.59s/it][A
+Training loss: 2.75e+00 lr: 6.25e-05:   1%|          | 60/10000 [02:18<5:13:20,  1.89s/it][A
+Training loss: 2.73e+00 lr: 5.65e-05:   1%|          | 61/10000 [02:19<3:50:36,  1.39s/it][A
+Training loss: 2.69e+00 lr: 4.09e-05:   1%|          | 62/10000 [02:24<7:15:32,  2.63s/it][A

@@ -63,7 +63,7 @@ class GasDataLoader:
                           batch_size = batch_size)
 
 # batch tokenizing function
-def tokenize(batch, tokenizer, mode = 'train'):
+def tokenize(batch, tokenizer, cfg, mode = 'train'):
     """
     Arguments :
         batch : List(Str)
@@ -74,8 +74,8 @@ def tokenize(batch, tokenizer, mode = 'train'):
     """
     if mode == 'train':
         texts, abstractives = batch['text'], batch['abstractive']
-        input_token = tokenizer.batch_encode_plus(texts, max_length=512, padding = 'max_length', return_tensors='pt',truncation=True)
-        output_token = tokenizer.batch_encode_plus(abstractives, max_length=256, padding = 'max_length', return_tensors='pt',truncation=True)
+        input_token = tokenizer.batch_encode_plus(texts, max_length=cfg.train.input_length, padding = 'max_length', return_tensors='pt',truncation=True)
+        output_token = tokenizer.batch_encode_plus(abstractives, max_length=cfg.train.output_length, padding = 'max_length', return_tensors='pt',truncation=True)
         return {'input_ids': input_token['input_ids'],
                 'attention_mask':input_token['attention_mask'],
                 'decoder_input_ids':output_token['input_ids'],
@@ -83,13 +83,13 @@ def tokenize(batch, tokenizer, mode = 'train'):
                 'labels':output_token['input_ids']}
     elif mode == 'val':
         texts, abstractives = batch['text'], batch['abstractive']
-        input_token = tokenizer.batch_encode_plus(texts, max_length=512, padding = 'max_length', return_tensors='pt',truncation=True)
-        output_token = tokenizer.batch_encode_plus(abstractives,  max_length=256, padding = 'max_length', return_tensors='pt',truncation=True)
+        input_token = tokenizer.batch_encode_plus(texts, max_length=cfg.train.input_length, padding = 'max_length', return_tensors='pt',truncation=True)
+        output_token = tokenizer.batch_encode_plus(abstractives,  max_length=cfg.train.output_length, padding = 'max_length', return_tensors='pt',truncation=True)
         return {'input_ids':input_token['input_ids'],
                 'attention_mask':input_token['attention_mask'],
                 'labels':output_token['input_ids']}
     else:
         texts = batch['text']
-        input_token = tokenizer.batch_encode_plus(texts, max_length=512, padding='max_length', return_tensors='pt')
+        input_token = tokenizer.batch_encode_plus(texts, max_length=cfg.train.input_length, padding='max_length', return_tensors='pt')
         return {'input_ids':input_token['input_ids'],
                 'attention_mask':input_token['attention_mask']}
