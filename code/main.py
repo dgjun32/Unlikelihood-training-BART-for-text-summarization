@@ -217,6 +217,7 @@ if __name__ == '__main__':
         epoch_loss = 0
         epoch_steps = 0
         tqdm_bar = tqdm(train_loader, desc="Training", total=cfg.train.n_steps)
+        #cfg.train.n_steps
         for step, batch in enumerate(tqdm_bar):
             optimizer.zero_grad()
             batch = tokenize(batch, tokenizer, cfg, mode = 'train')
@@ -257,8 +258,8 @@ if __name__ == '__main__':
                     r1, r2, rL = validate(cfg, model, val_loader, tokenizer, cfg.gen, metric)
                     # example abstraction
                     ex_tokens = tokenizer([cfg.val.example_article], max_length=cfg.train.input_length, padding = 'max_length', return_tensors='pt', truncation=True)
-                    ex_seq = model.generate(input_ids=ex_tokens['input_ids'],
-                                 attention_mask=ex_tokens['attention_mask'],
+                    ex_seq = model.generate(input_ids=ex_tokens['input_ids'].cuda(),
+                                 attention_mask=ex_tokens['attention_mask'].cuda(),
                                 **cfg.gen,
                                 pad_token_id = tokenizer.pad_token_id,
                                 eos_token_id = tokenizer.eos_token_id,

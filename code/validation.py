@@ -22,8 +22,8 @@ def validate(cfg, model, val_dataloader, tokenizer, generation_param, metric):
         batch = tokenize(batch, tokenizer, cfg, mode = 'val')
         token_pred = model.generate(
             **generation_param,
-            input_ids = batch['input_ids'],
-            attention_mask = batch['attention_mask'],
+            input_ids = batch['input_ids'].cuda(),
+            attention_mask = batch['attention_mask'].cuda(),
             pad_token_id = tokenizer.pad_token_id,
             eos_token_id = tokenizer.eos_token_id,
             bos_token_id = tokenizer.bos_token_id,
@@ -35,7 +35,7 @@ def validate(cfg, model, val_dataloader, tokenizer, generation_param, metric):
             skip_special_tokens=True
             )
         text_ref = tokenizer.batch_decode(
-            batch['decoder_input_ids'],
+            batch['labels'],
             skip_special_tokens=True
             )
         text_preds += text_pred
