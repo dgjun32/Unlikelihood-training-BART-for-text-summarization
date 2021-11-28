@@ -39,3 +39,9 @@ I applied unlikelihood training scheme to finetune pretrained ```KoBART```(Korea
 ```
 
 ## 5. Result
+
+Evaluated by Dacon Gas text summarization competition dataset
+
+| Rouge 1 | Rouge 2 | Rouge L |
+|:---|:---|:---|
+| 0.49839 | 0.3314 | 0.40408 |
