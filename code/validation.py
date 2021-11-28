@@ -25,7 +25,7 @@ def validate(cfg, model, val_dataloader, tokenizer, generation_param, metric):
             input_ids = batch['input_ids'].cuda(),
             attention_mask = batch['attention_mask'].cuda(),
             pad_token_id = tokenizer.pad_token_id,
-            eos_token_id = tokenizer.eos_token_id,
+            eos_token_id = 17546,
             bos_token_id = tokenizer.bos_token_id,
             num_return_sequences = 1,
             early_stopping = True
@@ -46,4 +46,4 @@ def validate(cfg, model, val_dataloader, tokenizer, generation_param, metric):
     rouge_1 = rouge['rouge1'].mid.fmeasure
     rouge_2 = rouge['rouge2'].mid.fmeasure
     rouge_L = rouge['rougeL'].mid.fmeasure
-    return rouge_1, rouge_2, rouge_L
+    return rouge_1, rouge_2, rouge_L /home/coder/dongjun/koBARTtuning/output
