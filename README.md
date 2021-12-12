@@ -110,8 +110,17 @@ Abstractive Summarization 3
 
 ## 5. Result
 
-Evaluated by Dacon Gas text summarization competition dataset
+Evaluated by Dacon AI Hub korean text summarization dataset
 
 | Rouge 1 | Rouge 2 | Rouge L |
 |:---|:---|:---|
-| 0.50951055 | 0.33709406 | 0.40986391 |
+| 0.51745055 | 0.34709406 | 0.41186391 |
+
+## 6. How to use
+1. Clone repository : ```$ git clone https://github.com/dongdori Unlikelihood-training-BART-for-text-summarization.git```
+
+2. Save file containing korean articles to be summarized at ```../data/test.jsonl```
+
+3. Run code for inference : ```$ python summarize.py --batch_size 16 --max_length 128 --num_beams 5 --n_ngram 3```
+
+4. csv file containing summarization will be saved at ```../submission/output.csv```
