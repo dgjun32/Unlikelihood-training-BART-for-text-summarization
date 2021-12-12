@@ -119,8 +119,10 @@ Evaluated by Dacon AI Hub korean text summarization dataset
 ## 6. How to use
 1. Clone repository : ```$ git clone https://github.com/dongdori Unlikelihood-training-BART-for-text-summarization.git```
 
-2. Save file containing korean articles to be summarized at ```../data/test.jsonl```
+2. Download model from [link](https://drive.google.com/file/d/1FauD_fZfSpejBLevd2040YHHTGEncB3X/view?usp=drivesdk) and save at ```../model/```
 
-3. Run code for inference : ```$ python summarize.py --batch_size 16 --max_length 128 --num_beams 5 --n_ngram 3```
+3. Download file containing korean articles to be summarized as ```../data/test.jsonl```
 
-4. csv file containing summarization will be saved at ```../submission/output.csv```
+4. Run code for inference : ```$ python summarize.py --batch_size 16 --max_length 128 --num_beams 5 --n_ngram 3```
+
+5. ```.csv``` file containing summarization will be saved as ```../submission/output.csv```
