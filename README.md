@@ -1,25 +1,26 @@
-# Sequence-level unlikelihood fine-tuning KoBART
+# Sequence-level unlikelihood fine-tuning KoBART for Text Summarization
 
 ## 1. Backgroud
-Current Korean text abstractive generation models suffer from ```text degeneration```, which includes text repetition issue.
 
-Applying advanced <b>stochastic decoding strategies</b> such as ```top-k sampling``` and ```nucleaus sampling``` can mitigate text repetition issue with open-ended language generation tasks. 
+현재 huggingface에 공개된 koBART 한국어 요약 모델은 ```text degeneration``` 문제에 취약합니다. decoding 과정에서 같은 단어가 무한히 반복된다거나, eos token이 출력되지 않아 문장이 무한히 이어지는 등의 문제입니다. 
 
-Recent research([Cho et al.2019](https://github.com/facebookresearch/unlikelihood_training)) suggests unlikelihood training to resolve text degeneration issue.
+Dialogue generation 과 같은 open-ended language generation task에선 ```top-k sampling```이나 ```nucleaus sampling``` 과 같은 확률적 디코딩 전략을 사용하는 것이 text degeneration을 완화할 순 있지만, 문서 요약이라는 task의 특성 상 확률적 디코딩을 사용하게 되면, text degeneration과는 별개로 문서의 요약 품질 자체가 떨어진다는 문제점이 있습니다. 
 
-I applied unlikelihood training scheme to finetune pretrained ```KoBART```(Korean BART).
+최근 연구인 [Cho et al.2019](https://github.com/facebookresearch/unlikelihood_training)은 unlikelihood training이라는 메커니즘을 통해 디코딩 단계가 아닌, 애초에 모델을 훈련시킬 때부터 text degeneration을 해결할 수 있는 방법론을 제안합니다.
 
-## 2. Data Preparation
+따라서, 이 방법론을 적용하여 거대한 한국어 말뭉치에 대해 사전학습된 ```KoBART```(Korean BART)를 추가학습(fine-tuning)해 보았습니다.
+
+## 3. Data Preparation
 
 1. Set directory : ```$cd data/```
 2. Download ```.json```file to current dir from the <b>AI hub</b> [link](https://aihub.or.kr/aidata/8054)
 
-## 3. Training
+## 4. Training
 
 1. Set directory : ```$cd code/```
 2. Training + Validation : ```$python main.py```
 
-## 4. Demo
+## 5. Demo
 News Article 1
 ```
 일본 극우 매체인 산케이신문의 논객이 한국의 일본제품 불매운동에 대해 "보기 흉하다"고 지적했다.
@@ -108,21 +109,20 @@ Abstractive Summarization 3
 세종시가 한국데이터산업진흥원이 공모한 '본인정보(MyData) 실증 연구과제' 공모 사업에 선정되어 에너지 사용정보를 제공한 주민에게 빅데이터 맞춤 서비스를 제공하는 사업에 착수하며 이번 공모사업을 통해 참여자에게 계획적이고 합리적인 에너지 소비를 위한 서비스를 제공하고, 참여자 중 에너지 절약에 노력한 가구에는 인센티브도 제공할 예정이라고 밝혔다.
 ```
 
-## 5. Result
-
-Evaluated by Dacon AI Hub korean text summarization dataset
+## 6. Result
+AI Hub 문서요약 텍스트 데이터셋의 test set으로 성능평가가 이루어졌습니다.
 
 | Rouge 1 | Rouge 2 | Rouge L |
 |:---|:---|:---|
 | 0.51745055 | 0.34709406 | 0.41186391 |
 
-## 6. How to use
-1. Clone repository : ```$ git clone https://github.com/dongdori Unlikelihood-training-BART-for-text-summarization.git```
+## 7. How to use
+1. 해당 레포를 clone합니다 : ```$ git clone https://github.com/dongdori Unlikelihood-training-BART-for-text-summarization.git```
 
-2. Download model from [link](https://drive.google.com/file/d/1FauD_fZfSpejBLevd2040YHHTGEncB3X/view?usp=drivesdk) and save at ```../model/```
+2. [링크](https://drive.google.com/file/d/1FauD_fZfSpejBLevd2040YHHTGEncB3X/view?usp=drivesdk)를 통해 학습된 모델을 다운받고,```../model/```디렉토리에 저장합니다.
 
-3. Download file containing korean articles to be summarized as ```../data/test.jsonl```
+3. 요약하고자 하는 article이 포함된 jsonl형식의 데이터를 ```../data/```디렉토리에 ```test.jsonl``` 라는 이름으로 저장합니다.
 
-4. Run code for inference : ```$ python summarize.py --batch_size 16 --max_length 128 --num_beams 5 --n_ngram 3```
+4. 요약 코드 실행: ```$ python summarize.py --batch_size 16 --max_length 128 --num_beams 5 --n_ngram 3```
 
-5. ```.csv``` file containing summarization will be saved as ```../submission/output.csv```
+5. ```output.csv``` 이라는 이름의 요약문 파일이 ```../submission/```디렉토리에 저장됩니다. 
