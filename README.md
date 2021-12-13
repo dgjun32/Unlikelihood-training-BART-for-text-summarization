@@ -8,7 +8,9 @@ Dialogue generation 과 같은 open-ended language generation task에선 ```top-
 
 최근 연구인 [Cho et al.2019](https://github.com/facebookresearch/unlikelihood_training)은 unlikelihood training이라는 메커니즘을 통해 디코딩 단계가 아닌, 애초에 모델을 훈련시킬 때부터 text degeneration을 해결할 수 있는 방법론을 제안합니다.
 
-따라서, 이 방법론을 적용하여 거대한 한국어 말뭉치에 대해 사전학습된 ```KoBART```(Korean BART)를 추가학습(fine-tuning)해 보았습니다.
+해당 연구에서는 사전학습된 GPT-2 모형을 sequence level unlikelihood를 통해 추가학습함으로써, 확률적 디코딩 전략 없이도 open-ended text generation task에서 text degeneration이 완화되었음을 보여줍니다. 
+
+따라서, 이 방법론을 문서 요약이라는 task 에 적합한 형태로 적용하여, 거대한 한국어 말뭉치에 대해 사전학습된 ```KoBART```(Korean BART)를 추가학습(fine-tuning)해 보았습니다.
 
 ## 3. Data Preparation
 
